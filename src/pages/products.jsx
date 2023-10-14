@@ -1,16 +1,16 @@
 import React from 'react'
-import { Button, Layout } from '../components'
-import { useEffect } from 'react';
-import { useState } from 'react';
+import { Button, Layout, TableCart } from '../components'
+import { useEffect, useState } from 'react';
+import { useDispatch } from 'react-redux';
+import { addToCart } from '../redux/slices/cartSlice';
 
 // Api endpoint
 const url = 'https://fakestoreapi.com/products'
 
 export default function Products() {
 
+    const dispatch = useDispatch();
     const [products, setProducts] = useState([]);
-    const [cart, setCart] = useState([]);
-    const [totalPrice, setTotalPrice] = useState(0)
 
     // Get data from API
     const getDataAll = async () => {
@@ -23,30 +23,21 @@ export default function Products() {
         getDataAll();
     }, []);
 
-    useEffect( () => {
-        const sum = cart.reduce( (acc, val) => {
-            const product = products.find( row => row.id === val.id);
-            console.log(product)
-            return acc + product.price * val.qty
-        }, 0)
-        setTotalPrice(sum)
-    }, [cart])
-
-    const handleAddToCart = (id) => {
-        if(cart.find( row => row.id === id)) {
-            setCart(
-                cart.map( item => item.id === id ? {...item, qty: item.qty + 1} : item)
-            )
-        } else{
-            setCart([
-                ...cart,
-                {
-                    id: id,
-                    qty: 1
-                }
-            ])
-        }
-    }
+    // const handleAddToCart = (id) => {
+    //     if(cart.find( row => row.id === id)) {
+    //         setCart(
+    //             cart.map( item => item.id === id ? {...item, qty: item.qty + 1} : item)
+    //         )
+    //     } else{
+    //         setCart([
+    //             ...cart,
+    //             {
+    //                 id: id,
+    //                 qty: 1
+    //             }
+    //         ])
+    //     }
+    // }
     return (
         <Layout>
             <div className="p-4 mt-8">
@@ -125,7 +116,7 @@ export default function Products() {
                                         <p>$.{row.price}</p>
                                         <Button
                                             label="+ Beli"
-                                            onClick={() => handleAddToCart(row.id)}
+                                            onClick={() => dispatch(addToCart({id: row.id, qty: 1}))}
                                         />
                                     </div>
                                 </div>
@@ -135,28 +126,7 @@ export default function Products() {
                     <div className="basis-1/2 md:basis-1/4 top-0">
                         <div className="bg-gray-200 p-4 rounded-lg">
                             <h2 className="text-lg font-bold">Cart Total</h2>
-                            <div className="">
-                                <div className="flex items-center justify-between">
-                                    <h3 className="text-normal font-semibold">Product</h3>
-                                    <h3 className="text-normal font-semibold">Subtotal</h3>
-                                </div>
-                                <div className="mt-2">
-                                    {products.length > 0 && cart.map( (row, index) => {
-                                        const product = products?.find( product => product.id === row.id)
-                                        return (
-                                            <div key={index} className="flex items-center justify-between mt-1">
-                                                <p className="">{product.title.substring(0, 10)}... | {row.qty}</p>
-                                                <p className="">{product.price * row.qty}</p>
-                                            </div>
-                                        )
-                                    })}
-                                </div>
-
-                                <div className="mt-4 flex items-center justify-between border-t border-gray-400">
-                                    <h3 className="mt-4 text-normal font-semibold">Total</h3>
-                                    <h3 className="mt-4 text-normal font-semibold">${totalPrice}</h3>
-                                </div>
-                            </div>
+                            <TableCart products={products} />
                         </div>
                     </div>
                 </div>
